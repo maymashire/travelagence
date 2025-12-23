@@ -40,20 +40,20 @@ function App() {
         <AuthProvider>
             <Routes>
                 <Route path="/" element={<SplashPage />} />
-                <Route path="/home" element={<Layout />}>
-                    <Route index element={<Home />} />
-                    <Route path="assistant" element={<Assistant />} />
-                    <Route path="destinations" element={<Destinations />} />
-                    <Route path="about" element={<About />} />
-                    <Route path="contact" element={<Contact />} />
-                    <Route path="details/:id" element={<Details />} />
-                    <Route path="booking" element={<Booking />} />
-                    <Route path="profile" element={
+                <Route element={<Layout />}>
+                    <Route path="/home" element={<Home />} />
+                    <Route path="/assistant" element={<Assistant />} />
+                    <Route path="/destinations" element={<Destinations />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/contact" element={<Contact />} />
+                    <Route path="/details/:id" element={<Details />} />
+                    <Route path="/booking" element={<Booking />} />
+                    <Route path="/profile" element={
                         <ProtectedRoute>
                             <Profile />
                         </ProtectedRoute>
                     } />
-                    <Route path="dashboard" element={
+                    <Route path="/dashboard" element={
                         <ProtectedRoute>
                             <Dashboard />
                         </ProtectedRoute>
