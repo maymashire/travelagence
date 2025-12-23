@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Map, CalendarCheck, LogOut, Globe, ChevronLeft, ChevronRight, User, X } from 'lucide-react';
+import { LayoutDashboard, Map, CalendarCheck, LogOut, Globe, ChevronLeft, ChevronRight, User, X, Home } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,11 @@ export function AdminSidebar({ isCollapsed, toggleSidebar, isMobileOpen, onClose
     const { logout } = useAuth();
 
     const menuItems = [
+        {
+            title: 'Home',
+            icon: Home,
+            path: '/home'
+        },
         {
             title: 'Dashboard',
             icon: LayoutDashboard,
