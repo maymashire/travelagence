@@ -35,21 +35,22 @@ export function Destinations() {
     return (
         <div className="min-h-screen bg-gray-50 pt-24 pb-12">
             <div className="container mx-auto px-4">
-                <div className="flex flex-col md:flex-row gap-8">
+                <div className="flex flex-col lg:flex-row gap-8">
                     {/* Sidebar Filters */}
-                    <aside className="w-full md:w-64 space-y-8">
+                    <aside className="w-full lg:w-64 space-y-6 lg:space-y-8">
                         <div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                            <h3 className="text-xl font-bold text-gray-900 mb-4 lg:mb-6 flex items-center gap-2">
                                 <Filter className="w-5 h-5" /> Filters
                             </h3>
-                            <div className="space-y-2">
+                            {/* Mobile Filters Scrollable */}
+                            <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible pb-4 lg:pb-0 no-scrollbar -mx-4 px-4 lg:mx-0 lg:px-0">
                                 {filters.map((filter) => (
                                     <button
                                         key={filter}
                                         onClick={() => setSelectedFilter(filter)}
-                                        className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 font-medium ${selectedFilter === filter
-                                            ? 'bg-primary text-white shadow-lg shadow-blue-200'
-                                            : 'bg-white text-gray-600 hover:bg-blue-50 hover:text-primary'
+                                        className={`whitespace-nowrap lg:w-full text-left px-6 lg:px-4 py-2.5 lg:py-3 rounded-full lg:rounded-xl transition-all duration-200 font-medium border lg:border-none ${selectedFilter === filter
+                                            ? 'bg-primary text-white shadow-lg shadow-blue-200 border-primary'
+                                            : 'bg-white text-gray-600 hover:bg-blue-50 hover:text-primary border-gray-200'
                                             }`}
                                     >
                                         {filter}
@@ -58,7 +59,7 @@ export function Destinations() {
                             </div>
                         </div>
 
-                        <div className="bg-blue-50 p-6 rounded-2xl border border-blue-100">
+                        <div className="hidden lg:block bg-blue-50 p-6 rounded-2xl border border-blue-100">
                             <h4 className="font-bold text-blue-900 mb-2">Need Help?</h4>
                             <p className="text-sm text-blue-700 mb-4">
                                 Can't decide where to go? Let our travel experts help you plan your dream vacation.
@@ -71,8 +72,8 @@ export function Destinations() {
 
                     {/* Results Grid */}
                     <div className="flex-1">
-                        <div className="mb-8">
-                            <h1 className="text-4xl font-bold text-gray-900 mb-2">Explore Destinations</h1>
+                        <div className="mb-8 text-center lg:text-left">
+                            <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Explore Destinations</h1>
                             <p className="text-gray-500">Discover your next adventure from our curated list of top destinations.</p>
                         </div>
 

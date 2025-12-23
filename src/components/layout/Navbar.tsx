@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Menu, X, Globe, User, LogOut, LayoutDashboard, Settings } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { motion } from 'framer-motion';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -131,61 +132,88 @@ export function Navbar() {
 
             {/* Mobile Menu */}
             {isOpen && (
-                <div className="md:hidden bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-lg absolute w-full">
-                    <div className="px-4 pt-4 pb-6 space-y-2">
-                        <Link to="/home" className="text-gray-600 hover:text-blue-600 hover:bg-blue-50 block px-3 py-2 rounded-lg text-base font-medium transition-colors" onClick={() => setIsOpen(false)}>
-                            Home
-                        </Link>
-                        <Link to="/destinations" className="text-gray-600 hover:text-blue-600 hover:bg-blue-50 block px-3 py-2 rounded-lg text-base font-medium transition-colors" onClick={() => setIsOpen(false)}>
-                            Destinations
-                        </Link>
-                        <Link to="/about" className="text-gray-600 hover:text-blue-600 hover:bg-blue-50 block px-3 py-2 rounded-lg text-base font-medium transition-colors" onClick={() => setIsOpen(false)}>
-                            About
-                        </Link>
-                        <Link to="/contact" className="text-gray-600 hover:text-blue-600 hover:bg-blue-50 block px-3 py-2 rounded-lg text-base font-medium transition-colors" onClick={() => setIsOpen(false)}>
-                            Contact
-                        </Link>
-                        <Link to="/booking" onClick={() => setIsOpen(false)}>
-                            <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md mt-4 rounded-lg py-6">
+                <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="md:hidden bg-white/98 backdrop-blur-xl border-b border-gray-100 shadow-2xl absolute w-full left-0 top-20 overflow-hidden"
+                >
+                    <div className="px-4 pt-4 pb-8 space-y-1">
+                        {[
+                            { name: 'Home', path: '/home' },
+                            { name: 'Destinations', path: '/destinations' },
+                            { name: 'About', path: '/about' },
+                            { name: 'Contact', path: '/contact' }
+                        ].map((item) => (
+                            <Link
+                                key={item.name}
+                                to={item.path}
+                                className="text-gray-700 hover:text-blue-600 hover:bg-blue-50/50 block px-4 py-3.5 rounded-xl text-lg font-semibold transition-all active:scale-95"
+                                onClick={() => setIsOpen(false)}
+                            >
+                                {item.name}
+                            </Link>
+                        ))}
+
+                        <Link to="/booking" onClick={() => setIsOpen(false)} className="block pt-2">
+                            <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-100 rounded-xl py-6 text-lg font-bold">
                                 Book Now
                             </Button>
                         </Link>
 
                         {user ? (
-                            <div className="border-t border-gray-100 pt-4 mt-4">
-                                <div className="flex items-center gap-3 mb-4 px-2">
-                                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center text-blue-600 font-bold overflow-hidden">
+                            <div className="border-t border-gray-100 pt-6 mt-6">
+                                <div className="flex items-center gap-4 mb-6 px-2">
+                                    <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center text-blue-600 font-bold overflow-hidden shadow-inner">
                                         {user.avatar_url ? (
                                             <img src={user.avatar_url} alt={user.full_name} className="h-full w-full object-cover" />
                                         ) : (
-                                            <span className="text-lg">S</span>
+                                            <span className="text-xl">{user.full_name[0]}</span>
                                         )}
                                     </div>
                                     <div>
-                                        <div className="text-sm font-medium text-gray-900">{user.full_name}</div>
-                                        <div className="text-xs text-gray-500">{user.email}</div>
+                                        <div className="text-base font-bold text-gray-900">{user.full_name}</div>
+                                        <div className="text-sm text-gray-500">{user.email}</div>
                                     </div>
                                 </div>
-                                <Link to={user.role === 'admin' ? "/admin" : "/dashboard"} className="text-gray-600 hover:text-blue-600 hover:bg-blue-50 block px-3 py-2 rounded-lg text-base font-medium" onClick={() => setIsOpen(false)}>
-                                    Dashboard
-                                </Link>
-                                <Button variant="ghost" className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg" onClick={handleLogout}>
-                                    <LogOut className="mr-2 h-4 w-4" />
-                                    Log out
-                                </Button>
+                                <div className="grid grid-cols-1 gap-2">
+                                    <Link
+                                        to={user.role === 'admin' ? "/admin" : "/dashboard"}
+                                        className="flex items-center gap-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50/50 px-4 py-3.5 rounded-xl text-lg font-semibold transition-all"
+                                        onClick={() => setIsOpen(false)}
+                                    >
+                                        <LayoutDashboard className="w-5 h-5" />
+                                        Dashboard
+                                    </Link>
+                                    <Link
+                                        to="/profile"
+                                        className="flex items-center gap-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50/50 px-4 py-3.5 rounded-xl text-lg font-semibold transition-all"
+                                        onClick={() => setIsOpen(false)}
+                                    >
+                                        <User className="w-5 h-5" />
+                                        Profile
+                                    </Link>
+                                    <button
+                                        className="flex items-center gap-3 w-full text-left text-red-500 hover:bg-red-50/50 px-4 py-3.5 rounded-xl text-lg font-semibold transition-all"
+                                        onClick={handleLogout}
+                                    >
+                                        <LogOut className="w-5 h-5" />
+                                        Log out
+                                    </button>
+                                </div>
                             </div>
                         ) : (
-                            <div className="border-t border-gray-100 pt-4 mt-4 space-y-2">
+                            <div className="border-t border-gray-100 pt-6 mt-6 grid grid-cols-2 gap-3">
                                 <Link to="/login" onClick={() => setIsOpen(false)}>
-                                    <Button variant="ghost" className="w-full justify-start text-gray-600 hover:bg-gray-50 rounded-lg">Login</Button>
+                                    <Button variant="ghost" className="w-full h-12 text-gray-700 hover:bg-gray-50 rounded-xl font-bold">Login</Button>
                                 </Link>
                                 <Link to="/register" onClick={() => setIsOpen(false)}>
-                                    <Button variant="outline" className="w-full border-blue-200 text-blue-600 hover:bg-blue-50 rounded-lg">Register</Button>
+                                    <Button variant="outline" className="w-full h-12 border-blue-200 text-blue-600 hover:bg-blue-50 rounded-xl font-bold">Register</Button>
                                 </Link>
                             </div>
                         )}
                     </div>
-                </div>
+                </motion.div>
             )}
         </nav>
     );
