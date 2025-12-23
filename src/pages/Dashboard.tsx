@@ -130,9 +130,9 @@ export function Dashboard() {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="h-[300px] w-full min-h-[300px]">
+                                <div className="h-[300px] w-full" style={{ minHeight: '300px' }}>
                                     {bookings.length > 0 ? (
-                                        <ResponsiveContainer width="100%" height="100%">
+                                        <ResponsiveContainer width="100%" height="100%" minHeight={300}>
                                             <BarChart data={spendingData}>
                                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
                                                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#888' }} />
@@ -159,9 +159,9 @@ export function Dashboard() {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="h-[300px] w-full min-h-[300px] flex items-center justify-center">
+                                <div className="h-[300px] w-full flex items-center justify-center" style={{ minHeight: '300px' }}>
                                     {bookings.length > 0 ? (
-                                        <ResponsiveContainer width="100%" height="100%">
+                                        <ResponsiveContainer width="100%" height="100%" minHeight={300}>
                                             <PieChart>
                                                 <Pie
                                                     data={typeData}
@@ -172,7 +172,7 @@ export function Dashboard() {
                                                     paddingAngle={5}
                                                     dataKey="value"
                                                 >
-                                                    {typeData.map((entry, index) => (
+                                                    {typeData.map((_, index) => (
                                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                                     ))}
                                                 </Pie>
