@@ -58,16 +58,16 @@ function App() {
                             <Dashboard />
                         </ProtectedRoute>
                     } />
-                    <Route path="admin" element={
-                        <ProtectedRoute role="admin">
-                            <AdminLayout />
-                        </ProtectedRoute>
-                    }>
-                        <Route index element={<AdminDashboardHome />} />
-                        <Route path="destinations" element={<AdminDestinations />} />
-                        <Route path="bookings" element={<AdminBookings />} />
-                        <Route path="users" element={<AdminUsers />} />
-                    </Route>
+                </Route>
+                <Route path="/admin" element={
+                    <ProtectedRoute role="admin">
+                        <AdminLayout />
+                    </ProtectedRoute>
+                }>
+                    <Route index element={<AdminDashboardHome />} />
+                    <Route path="destinations" element={<AdminDestinations />} />
+                    <Route path="bookings" element={<AdminBookings />} />
+                    <Route path="users" element={<AdminUsers />} />
                 </Route>
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
