@@ -1,15 +1,19 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { adminService, Booking } from '@/services/adminService';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription, DialogClose } from '@/components/ui/dialog';
 import { Loader2, Check, X, Trash2, Calendar, Search, MapPin, User, Eye } from 'lucide-react';
+import { ConfirmationDialog } from '@/components/ui/ConfirmationDialog';
 
 export function AdminBookings() {
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [deleteId, setDeleteId] = useState<number | string | null>(null);
 
     useEffect(() => {
         loadBookings();
@@ -21,6 +25,7 @@ export function AdminBookings() {
             setBookings(data || []);
         } catch (error) {
             console.error('Failed to load bookings', error);
+            toast.error('Failed to load bookings');
         } finally {
             setIsLoading(false);
         }
@@ -30,20 +35,30 @@ export function AdminBookings() {
         try {
             await adminService.updateBookingStatus(id, status);
             setBookings(bookings.map(b => b.id === id ? { ...b, status } : b));
+            toast.success(`Booking ${status} successfully`);
         } catch (error) {
             console.error('Failed to update booking status', error);
-            alert('Failed to update status');
+            toast.error('Failed to update status');
         }
     };
 
-    const handleDelete = async (id: number | string) => {
-        if (!confirm('Are you sure you want to delete this booking?')) return;
+    const handleDeleteClick = (id: number | string) => {
+        setDeleteId(id);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!deleteId) return;
+        setIsDeleting(true);
         try {
-            await adminService.deleteBooking(id);
-            setBookings(bookings.filter(b => b.id !== id));
+            await adminService.deleteBooking(deleteId);
+            setBookings(bookings.filter(b => b.id !== deleteId));
+            toast.success('Booking deleted successfully');
+            setDeleteId(null);
         } catch (error) {
             console.error('Failed to delete booking', error);
-            alert('Failed to delete booking');
+            toast.error('Failed to delete booking');
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -171,7 +186,9 @@ export function AdminBookings() {
                                                     </div>
                                                 </div>
                                                 <DialogFooter>
-                                                    <Button variant="outline" onClick={(e) => (e.target as HTMLElement).closest('dialog')?.close()}>Close</Button>
+                                                    <DialogClose asChild>
+                                                        <Button variant="outline">Close</Button>
+                                                    </DialogClose>
                                                 </DialogFooter>
                                             </DialogContent>
                                         </Dialog>
@@ -185,7 +202,7 @@ export function AdminBookings() {
                                                 <X className="w-4 h-4" />
                                             </Button>
                                         )}
-                                        <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => handleDelete(booking.id)}>
+                                        <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => handleDeleteClick(booking.id)}>
                                             <Trash2 className="w-4 h-4" />
                                         </Button>
                                     </div>
@@ -286,7 +303,7 @@ export function AdminBookings() {
                                             Cancel
                                         </Button>
                                     )}
-                                    <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground" onClick={() => handleDelete(booking.id)}>
+                                    <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground" onClick={() => handleDeleteClick(booking.id)}>
                                         <Trash2 className="w-4 h-4" />
                                     </Button>
                                 </div>
@@ -295,6 +312,17 @@ export function AdminBookings() {
                     </Card>
                 ))}
             </div>
+
+            <ConfirmationDialog
+                isOpen={deleteId !== null}
+                onClose={() => setDeleteId(null)}
+                onConfirm={handleConfirmDelete}
+                title="Delete Booking"
+                description="Are you sure you want to delete this booking? This action cannot be undone."
+                confirmText="Delete"
+                variant="danger"
+                isLoading={isDeleting}
+            />
         </div>
     );
 }

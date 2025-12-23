@@ -1,20 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CreditCard, Plane, Wallet, Loader2, CheckCircle } from 'lucide-react';
+import { CreditCard, Plane, Wallet, Loader2 } from 'lucide-react';
 import { api } from '@/services/api';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog";
 
 export function Booking() {
     const location = useLocation();
@@ -25,7 +19,6 @@ export function Booking() {
     const [destinations, setDestinations] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [showConfirmation, setShowConfirmation] = useState(false);
 
     const [formData, setFormData] = useState({
         fullName: user?.full_name || '',
@@ -76,7 +69,7 @@ export function Booking() {
         e.preventDefault();
 
         if (!user) {
-            alert("Please login to book a trip.");
+            toast.error("Please login to book a trip.");
             navigate('/login');
             return;
         }
@@ -105,24 +98,25 @@ export function Booking() {
 
             if (error) throw error;
 
-            setShowConfirmation(true);
+            toast.success("Booking confirmed! Redirecting to your dashboard...");
+
+            // Redirect after a short delay to let the toast be seen
+            setTimeout(() => {
+                if (user?.role === 'admin') {
+                    navigate('/admin');
+                } else {
+                    navigate('/dashboard');
+                }
+            }, 2000);
+
         } catch (error: any) {
             console.error('Booking failed:', error);
-            alert(`Booking failed: ${error.message}`);
+            toast.error(`Booking failed: ${error.message}`);
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    const handleCloseConfirmation = () => {
-        setShowConfirmation(false);
-        // Redirect based on role
-        if (user?.role === 'admin') {
-            navigate('/admin');
-        } else {
-            navigate('/dashboard');
-        }
-    };
 
     if (isLoading) return <div className="flex items-center justify-center min-h-screen"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
 
@@ -262,26 +256,6 @@ export function Booking() {
                 </Card>
             </div>
 
-            <Dialog open={showConfirmation} onOpenChange={handleCloseConfirmation}>
-                <DialogContent className="sm:max-w-md text-center">
-                    <DialogHeader>
-                        <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                            <CheckCircle className="w-8 h-8 text-green-600" />
-                        </div>
-                        <DialogTitle className="text-2xl font-bold text-center">Booking Confirmed!</DialogTitle>
-                        <DialogDescription className="text-center pt-2">
-                            Your trip to <span className="font-semibold text-primary">{formData.destination}</span> has been successfully booked.
-                            <br />
-                            We've sent a confirmation email to {formData.email}.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="flex justify-center mt-4">
-                        <Button onClick={handleCloseConfirmation} className="w-full sm:w-auto px-8">
-                            Go to Dashboard
-                        </Button>
-                    </div>
-                </DialogContent>
-            </Dialog>
         </div>
     );
 }

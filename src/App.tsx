@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'sonner';
 import { Layout } from '@/components/layout/Layout';
 import { Home } from '@/pages/Home';
 import { Assistant } from '@/pages/Assistant';
@@ -22,13 +23,24 @@ import { AuthProvider, useAuth } from '@/context/AuthContext';
 function ProtectedRoute({ children, role }: { children: React.ReactNode, role?: 'admin' | 'user' }) {
     const { user, isLoading } = useAuth();
 
-    if (isLoading) return <div>Loading...</div>;
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-background">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                    <p className="text-muted-foreground animate-pulse">Verifying session...</p>
+                </div>
+            </div>
+        );
+    }
 
     if (!user) {
+        console.log('No user found in ProtectedRoute, redirecting to login');
         return <Navigate to="/login" replace />;
     }
 
     if (role && user.role !== role) {
+        console.log(`User role ${user.role} does not match required role ${role}, redirecting to home`);
         return <Navigate to="/home" replace />;
     }
 
@@ -38,6 +50,7 @@ function ProtectedRoute({ children, role }: { children: React.ReactNode, role?: 
 function App() {
     return (
         <AuthProvider>
+            <Toaster position="top-center" richColors />
             <Routes>
                 <Route path="/" element={<SplashPage />} />
                 <Route element={<Layout />}>

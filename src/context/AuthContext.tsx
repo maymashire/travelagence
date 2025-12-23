@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 
@@ -29,39 +29,72 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
+    const lastSessionId = useRef<string | null>(null);
 
     useEffect(() => {
         // 1. Check for initial session
         const initAuth = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                await syncUser(session.user);
-            } else {
-                // Fallback for bypass login
-                const storedUser = localStorage.getItem('travel_app_user');
-                if (storedUser) {
-                    try {
-                        setUser(JSON.parse(storedUser));
-                    } catch (e) {
-                        localStorage.removeItem('travel_app_user');
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session) {
+                    lastSessionId.current = session.access_token;
+                    await syncUser(session.user);
+                } else {
+                    // Fallback for bypass login
+                    const storedUser = localStorage.getItem('travel_app_user');
+                    if (storedUser) {
+                        try {
+                            const parsed = JSON.parse(storedUser);
+                            setUser(parsed);
+                            console.log('Restored bypass user from storage:', parsed.email);
+                        } catch (e) {
+                            localStorage.removeItem('travel_app_user');
+                        }
                     }
                 }
+            } catch (error) {
+                console.error('Auth initialization error:', error);
+            } finally {
+                setIsLoading(false);
             }
-            setIsLoading(false);
         };
 
         initAuth();
 
         // 2. Listen for auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            console.log('Auth event:', event, session ? `session present (${session.user.email})` : 'no session');
+
             if (session) {
-                await syncUser(session.user);
+                // Only sync if the session has actually changed to avoid 429 errors
+                if (session.access_token !== lastSessionId.current) {
+                    lastSessionId.current = session.access_token;
+                    await syncUser(session.user);
+                }
             } else if (event === 'SIGNED_OUT') {
-                // Only clear if it was an explicit sign out
-                setUser(null);
-                localStorage.removeItem('travel_app_user');
+                lastSessionId.current = null;
+                // Only clear if we don't have a bypass user
+                setUser(prev => {
+                    if (prev?.id === 'admin-id') {
+                        console.log('Ignoring SIGNED_OUT event for bypass admin');
+                        return prev;
+                    }
+                    return null;
+                });
+
+                // Only remove from localStorage if it's not a bypass user
+                const stored = localStorage.getItem('travel_app_user');
+                if (stored) {
+                    try {
+                        const parsed = JSON.parse(stored);
+                        if (parsed.id !== 'admin-id') {
+                            localStorage.removeItem('travel_app_user');
+                        }
+                    } catch (e) {
+                        localStorage.removeItem('travel_app_user');
+                    }
+                }
             }
-            setIsLoading(false);
         });
 
         return () => {
@@ -83,8 +116,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     const login = (userData: User) => {
-        // This is now primarily handled by onAuthStateChange, 
-        // but we keep it for immediate UI feedback if needed.
         setUser(userData);
         localStorage.setItem('travel_app_user', JSON.stringify(userData));
     };

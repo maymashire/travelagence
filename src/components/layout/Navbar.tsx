@@ -4,6 +4,7 @@ import { Menu, X, Globe, User, LogOut, LayoutDashboard, Settings } from 'lucide-
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -21,6 +22,7 @@ export function Navbar() {
     const handleLogout = () => {
         logout();
         setIsOpen(false);
+        toast.success("Logged out successfully");
     };
 
     return (

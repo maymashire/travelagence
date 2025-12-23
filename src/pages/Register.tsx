@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -64,12 +65,13 @@ export function Register() {
                     console.error('Profile sync error details:', profileError);
                 }
 
-                alert('Registration successful! You can now log in.');
+                toast.success('Registration successful! You can now log in.');
                 navigate('/login');
             }
         } catch (err: any) {
             console.error('Registration error:', err);
             setError(err.message || 'An error occurred during registration');
+            toast.error(err.message || 'An error occurred during registration');
         } finally {
             setLoading(false);
         }

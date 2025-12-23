@@ -130,7 +130,7 @@ export function Dashboard() {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="h-[300px] w-full">
+                                <div className="h-[300px] w-full min-h-[300px]">
                                     {bookings.length > 0 ? (
                                         <ResponsiveContainer width="100%" height="100%">
                                             <BarChart data={spendingData}>
@@ -159,7 +159,7 @@ export function Dashboard() {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="h-[300px] w-full flex items-center justify-center">
+                                <div className="h-[300px] w-full min-h-[300px] flex items-center justify-center">
                                     {bookings.length > 0 ? (
                                         <ResponsiveContainer width="100%" height="100%">
                                             <PieChart>

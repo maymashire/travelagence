@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -6,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { supabase } from '@/lib/supabase';
 import { Loader2, Plus, Pencil, Trash2, Search, User } from 'lucide-react';
+import { ConfirmationDialog } from '@/components/ui/ConfirmationDialog';
 
 interface UserProfile {
     id: string;
@@ -24,6 +26,8 @@ export function AdminUsers() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
     const [formData, setFormData] = useState({ full_name: '', email: '', role: 'user' });
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [deleteId, setDeleteId] = useState<string | null>(null);
 
     useEffect(() => {
         fetchUsers();
@@ -85,7 +89,7 @@ export function AdminUsers() {
                 // Create new user (Note: This only creates a profile record, not an auth user. 
                 // Real auth user creation requires admin API or client-side signUp which logs in the new user)
                 // For this demo, we will simulate creating a profile.
-                alert("Note: To create a fully functional user, they must sign up via the registration page. This action only creates a profile record.");
+                toast.info("Note: To create a fully functional user, they must sign up via the registration page. This action only creates a profile record.");
 
                 const { error } = await supabase
                     .from('users')
@@ -103,29 +107,39 @@ export function AdminUsers() {
             setIsDialogOpen(false);
             setEditingUser(null);
             setFormData({ full_name: '', email: '', role: 'user' });
+            toast.success(editingUser ? 'User updated successfully' : 'User profile created');
         } catch (error) {
             console.error('Failed to save user', error);
-            alert('Failed to save user');
+            toast.error('Failed to save user');
         }
     };
 
-    const handleDelete = async (id: string) => {
+    const handleDeleteClick = (id: string) => {
         if (id === 'admin-id') {
-            alert('Cannot delete the system admin account.');
+            toast.error('Cannot delete the system admin account.');
             return;
         }
-        if (!confirm('Are you sure you want to delete this user profile?')) return;
+        setDeleteId(id);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!deleteId) return;
+        setIsDeleting(true);
         try {
             const { error } = await supabase
                 .from('users')
                 .delete()
-                .eq('id', id);
+                .eq('id', deleteId);
 
             if (error) throw error;
-            setUsers(users.filter(u => u.id !== id));
+            setUsers(users.filter(u => u.id !== deleteId));
+            toast.success('User deleted successfully');
+            setDeleteId(null);
         } catch (error) {
             console.error('Failed to delete user', error);
-            alert('Failed to delete user');
+            toast.error('Failed to delete user');
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -266,7 +280,7 @@ export function AdminUsers() {
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    onClick={() => handleDelete(user.id)}
+                                                    onClick={() => handleDeleteClick(user.id)}
                                                 >
                                                     <Trash2 className="w-4 h-4 text-red-500" />
                                                 </Button>
@@ -279,6 +293,17 @@ export function AdminUsers() {
                     </div>
                 </CardContent>
             </Card>
+
+            <ConfirmationDialog
+                isOpen={deleteId !== null}
+                onClose={() => setDeleteId(null)}
+                onConfirm={handleConfirmDelete}
+                title="Delete User"
+                description="Are you sure you want to delete this user profile? This action cannot be undone."
+                confirmText="Delete"
+                variant="danger"
+                isLoading={isDeleting}
+            />
         </div>
     );
 }

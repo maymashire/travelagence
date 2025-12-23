@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { adminService, Destination } from '@/services/adminService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Plus, Pencil, Trash2, Loader2, Search } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { MOCK_DESTINATIONS } from '@/services/api';
+import { ConfirmationDialog } from '@/components/ui/ConfirmationDialog';
 
 export function AdminDestinations() {
     const [destinations, setDestinations] = useState<Destination[]>([]);
@@ -16,6 +18,9 @@ export function AdminDestinations() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [editingId, setEditingId] = useState<number | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [deleteId, setDeleteId] = useState<number | null>(null);
+    const [isSeedDialogOpen, setIsSeedDialogOpen] = useState(false);
 
     const [formData, setFormData] = useState<Destination>({
         name: '',
@@ -42,7 +47,7 @@ export function AdminDestinations() {
     };
 
     const handleSeed = async () => {
-        if (!confirm('This will add mock destinations to the database. Continue?')) return;
+        setIsSeedDialogOpen(false);
         setIsLoading(true);
         try {
             for (const dest of MOCK_DESTINATIONS) {
@@ -56,10 +61,10 @@ export function AdminDestinations() {
                 });
             }
             await loadDestinations();
-            alert('Database seeded successfully!');
+            toast.success('Database seeded successfully!');
         } catch (error: any) {
             console.error('Failed to seed database', error);
-            alert(`Failed to seed database: ${error.message || 'Unknown error'}`);
+            toast.error(`Failed to seed database: ${error.message || 'Unknown error'}`);
         } finally {
             setIsLoading(false);
         }
@@ -95,27 +100,38 @@ export function AdminDestinations() {
         try {
             if (editingId) {
                 await adminService.updateDestination(editingId, formData);
+                toast.success('Destination updated successfully');
             } else {
                 await adminService.createDestination(formData);
+                toast.success('Destination created successfully');
             }
             await loadDestinations();
             setIsDialogOpen(false);
         } catch (error) {
             console.error('Failed to save destination', error);
-            alert('Failed to save destination');
+            toast.error('Failed to save destination');
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    const handleDelete = async (id: number) => {
-        if (!confirm('Are you sure you want to delete this destination?')) return;
+    const handleDeleteClick = (id: number) => {
+        setDeleteId(id);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!deleteId) return;
+        setIsDeleting(true);
         try {
-            await adminService.deleteDestination(id);
-            setDestinations(destinations.filter(d => d.id !== id));
+            await adminService.deleteDestination(deleteId);
+            setDestinations(destinations.filter(d => d.id !== deleteId));
+            toast.success('Destination deleted successfully');
+            setDeleteId(null);
         } catch (error) {
             console.error('Failed to delete destination', error);
-            alert('Failed to delete destination');
+            toast.error('Failed to delete destination');
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -145,7 +161,7 @@ export function AdminDestinations() {
                         />
                     </div>
                     <div className="flex gap-2">
-                        <Button variant="outline" onClick={handleSeed} disabled={destinations.length > 0}>
+                        <Button variant="outline" onClick={() => setIsSeedDialogOpen(true)} disabled={destinations.length > 0}>
                             Seed
                         </Button>
                         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -225,7 +241,7 @@ export function AdminDestinations() {
                                         <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(dest)}>
                                             <Pencil className="w-4 h-4 text-blue-500" />
                                         </Button>
-                                        <Button variant="ghost" size="icon" onClick={() => handleDelete(dest.id!)}>
+                                        <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(dest.id!)}>
                                             <Trash2 className="w-4 h-4 text-red-500" />
                                         </Button>
                                     </div>
@@ -253,7 +269,7 @@ export function AdminDestinations() {
                                 <Button size="icon" variant="secondary" className="h-8 w-8 bg-white/90 hover:bg-white" onClick={() => handleOpenDialog(dest)}>
                                     <Pencil className="w-4 h-4 text-blue-600" />
                                 </Button>
-                                <Button size="icon" variant="secondary" className="h-8 w-8 bg-white/90 hover:bg-white" onClick={() => handleDelete(dest.id!)}>
+                                <Button size="icon" variant="secondary" className="h-8 w-8 bg-white/90 hover:bg-white" onClick={() => handleDeleteClick(dest.id!)}>
                                     <Trash2 className="w-4 h-4 text-red-600" />
                                 </Button>
                             </div>
@@ -271,6 +287,27 @@ export function AdminDestinations() {
                     </Card>
                 ))}
             </div>
+
+            <ConfirmationDialog
+                isOpen={deleteId !== null}
+                onClose={() => setDeleteId(null)}
+                onConfirm={handleConfirmDelete}
+                title="Delete Destination"
+                description="Are you sure you want to delete this destination? This action cannot be undone."
+                confirmText="Delete"
+                variant="danger"
+                isLoading={isDeleting}
+            />
+
+            <ConfirmationDialog
+                isOpen={isSeedDialogOpen}
+                onClose={() => setIsSeedDialogOpen(false)}
+                onConfirm={handleSeed}
+                title="Seed Database"
+                description="This will add mock destinations to the database. Continue?"
+                confirmText="Seed"
+                variant="info"
+            />
         </div>
     );
 }

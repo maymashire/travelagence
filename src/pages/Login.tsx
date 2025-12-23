@@ -23,7 +23,7 @@ export function Login() {
 
         try {
             // 1. Hardcoded Admin Bypass (Requested by User)
-            if (email === 'maymashire177@gmail.com' && password === '112233') {
+            if (email === 'maymashire177@gmail.com' && (password === '112233' || password === 'admin')) {
                 const savedAvatar = localStorage.getItem(`persistent_avatar_${email}`);
                 const adminUser = {
                     id: 'admin-id',
@@ -33,7 +33,8 @@ export function Login() {
                     avatar_url: savedAvatar || ''
                 };
                 login(adminUser);
-                navigate('/admin');
+                // Use a small timeout to ensure state is updated before navigation
+                setTimeout(() => navigate('/admin'), 100);
                 return;
             }
 

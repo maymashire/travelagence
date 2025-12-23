@@ -9,6 +9,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { User, Mail, Phone, Camera, Loader2, Save } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
+import { toast } from 'sonner';
+
 export function Profile() {
     const { user, refreshUser, updateLocalUser } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
@@ -41,7 +43,7 @@ export function Profile() {
                     avatar_url: formData.avatar_url
                 });
                 setIsEditing(false);
-                alert('Profile updated successfully (Local Admin)!');
+                toast.success('Profile updated successfully (Local Admin)!');
                 return;
             }
 
@@ -73,10 +75,10 @@ export function Profile() {
 
             await refreshUser();
             setIsEditing(false);
-            alert('Profile updated successfully!');
+            toast.success('Profile updated successfully!');
         } catch (error: any) {
             console.error('Error updating profile:', error);
-            alert(`Failed to update profile: ${error.message}`);
+            toast.error(`Failed to update profile: ${error.message}`);
         } finally {
             setIsLoading(false);
         }
@@ -149,18 +151,18 @@ export function Profile() {
                                                                 // Update profile immediately
                                                                 if (user?.id === 'admin-id') {
                                                                     updateLocalUser({ avatar_url: publicUrl });
-                                                                    alert('Avatar uploaded successfully (Local Admin)!');
+                                                                    toast.success('Avatar uploaded successfully (Local Admin)!');
                                                                 } else {
                                                                     const { error: authError } = await supabase.auth.updateUser({
                                                                         data: { avatar_url: publicUrl }
                                                                     });
                                                                     if (authError) throw authError;
                                                                     await refreshUser();
-                                                                    alert('Avatar uploaded successfully!');
+                                                                    toast.success('Avatar uploaded successfully!');
                                                                 }
                                                             } catch (error: any) {
                                                                 console.error('Upload error:', error);
-                                                                alert(`Upload failed: ${error.message}. Ensure you have a public "avatars" bucket in Supabase Storage.`);
+                                                                toast.error(`Upload failed: ${error.message}. Ensure you have a public "avatars" bucket in Supabase Storage.`);
                                                             } finally {
                                                                 setIsLoading(false);
                                                             }
